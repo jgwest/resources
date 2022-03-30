@@ -1,0 +1,18 @@
+domain: math.com
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: calculator-service
+repo: github.com/math-com/calculator-service
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: math.com
+  kind: Calculator
+  path: github.com/math-com/calculator-service/api/v1alpha1
+  version: v1alpha1
+version: "3"
