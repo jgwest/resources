@@ -35,13 +35,15 @@ echo "* Grafana route is: https://$HOSTNAME"
 echo "  - See 'grafana-cr.yaml' for admin login/password"
 echo
 
+TMP_DIR=`mktemp -d`
+
 # Substitute the cluster domain into the Grafana Ingress CR
-cp -f grafana-cr.yaml grafana-cr-resolved.yaml
-sed -i 's/HOSTNAME/'$HOSTNAME'/g' grafana-cr-resolved.yaml
+cp -f grafana-cr.yaml $TMP_DIR/grafana-cr-resolved.yaml
+sed -i 's/HOSTNAME/'$HOSTNAME'/g' $TMP_DIR/grafana-cr-resolved.yaml
 
-kubectl apply -f grafana-cr-resolved.yaml -n grafana
+kubectl apply -f $TMP_DIR/grafana-cr-resolved.yaml -n grafana
 
-rm -f grafana-cr-resolved.yaml
+rm -f $TMP_DIR/grafana-cr-resolved.yaml
 
 # The kubectl equivalent to: 'oc adm policy add-cluster-role-to-user cluster-monitoring-view -z grafana-serviceaccount'
 kubectl apply -f grafana-cluster-role-binding.yaml -n grafana
@@ -50,7 +52,7 @@ kubectl apply -f grafana-cluster-role-binding.yaml -n grafana
 echo
 echo "* Waiting for Grafana service account token secret to exist"
 while : ; do
-  kubectl get secrets | grep "grafana-serviceaccount-token"  > /dev/null 2>&1 && break
+  kubectl get secrets -n grafana | grep "grafana-serviceaccount-token"  > /dev/null 2>&1 && break
   sleep 1s
 done
 
@@ -61,13 +63,13 @@ GRAFANA_SECRET=`kubectl get secrets | grep "grafana-serviceaccount-token" |  cut
 
 GRAFANA_SA_TOKEN=`kubectl get secret $GRAFANA_SECRET -o jsonpath={.data.token} | base64 -d`
 
-cp -f grafana-data-source.yaml  grafana-data-source-resolved.yaml
+cp -f grafana-data-source.yaml  $TMP_DIR/grafana-data-source-resolved.yaml
 
-sed -i 's/GRAFANA_SA_TOKEN/'$GRAFANA_SA_TOKEN'/g' grafana-data-source-resolved.yaml
+sed -i 's/GRAFANA_SA_TOKEN/'$GRAFANA_SA_TOKEN'/g' $TMP_DIR/grafana-data-source-resolved.yaml
 
-kubectl apply -f grafana-data-source-resolved.yaml
+kubectl apply -f $TMP_DIR/grafana-data-source-resolved.yaml
 
-rm -f grafana-data-source-resolved.yaml
+rm -f $TMP_DIR/grafana-data-source-resolved.yaml
 
 # This section was based on https://www.redhat.com/en/blog/custom-grafana-dashboards-red-hat-openshift-container-platform-4
 
