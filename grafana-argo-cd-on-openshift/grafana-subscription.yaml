@@ -5,19 +5,12 @@ metadata:
     operators.coreos.com/grafana-operator.grafana: ""
   name: grafana-operator
   namespace: grafana
-#spec:
-#  channel: alpha
-#  installPlanApproval: Automatic
-#  name: grafana-operator
-#  source: community-operators
-#  sourceNamespace: openshift-marketplace
-#  startingCSV: grafana-operator.v3.10.1
-  
+
 spec:
   channel: v4
   installPlanApproval: Automatic
   name: grafana-operator
   source: community-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: grafana-operator.v4.2.0
-  
+  startingCSV: grafana-operator.v4.8.0
+

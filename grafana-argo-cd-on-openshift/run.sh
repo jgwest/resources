@@ -5,7 +5,6 @@
 # Allow Prometheus process to view the openshift-operators namespace
 kubectl apply -f prometheus-roles-for-openshift-operators.yaml -n openshift-operators
 
-
 # -----------------
 echo 
 echo "* Kick off an OLM install of Grafana, and wait for it to complete"
@@ -28,7 +27,8 @@ done
 
 
 # Extract the cluster domain from another route
-export HOSTNAME=`kubectl get route/openshift-gitops-server -n openshift-gitops -o yaml  | grep "    host:" | cut -c11- | sed -e 's/openshift-gitops-server-openshift-gitops/meow/g'`
+
+export HOSTNAME=`kubectl get route/grafana-route -n grafana -o yaml  | grep "    host:" | cut -c11-`
 
 echo
 echo "* Grafana route is: https://$HOSTNAME"
@@ -48,16 +48,18 @@ kubectl apply -f grafana-cluster-role-binding.yaml -n grafana
 
 # -----------------
 echo
-echo "* Waiting for Grafana service account to exist"
+echo "* Waiting for Grafana service account token secret to exist"
 while : ; do
-  oc serviceaccounts get-token grafana-serviceaccount -n grafana  > /dev/null 2>&1 && break
+  kubectl get secrets | grep "grafana-serviceaccount-token"  > /dev/null 2>&1 && break
   sleep 1s
 done
 
 echo
 echo "* Applying GrafanaDataSource, using Grafana Service Account Token"
 
-export GRAFANA_SA_TOKEN=`oc serviceaccounts get-token grafana-serviceaccount -n grafana`
+GRAFANA_SECRET=`kubectl get secrets | grep "grafana-serviceaccount-token" |  cut -d ' ' -f 1`
+
+GRAFANA_SA_TOKEN=`kubectl get secret $GRAFANA_SECRET -o jsonpath={.data.token} | base64 -d`
 
 cp -f grafana-data-source.yaml  grafana-data-source-resolved.yaml
 
