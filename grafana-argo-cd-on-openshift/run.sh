@@ -4,6 +4,7 @@
 
 # Allow Prometheus process to view the openshift-operators namespace
 kubectl apply -f prometheus-roles-for-openshift-operators.yaml -n openshift-operators
+kubectl apply -f prometheus-roles-for-gitops-ns.yaml -n gitops
 
 # -----------------
 echo 
@@ -59,9 +60,9 @@ done
 echo
 echo "* Applying GrafanaDataSource, using Grafana Service Account Token"
 
-GRAFANA_SECRET=`kubectl get secrets | grep "grafana-serviceaccount-token" |  cut -d ' ' -f 1`
+GRAFANA_SECRET=`kubectl -n grafana get secrets | grep "grafana-serviceaccount-token" |  cut -d ' ' -f 1`
 
-GRAFANA_SA_TOKEN=`kubectl get secret $GRAFANA_SECRET -o jsonpath={.data.token} | base64 -d`
+GRAFANA_SA_TOKEN=`kubectl -n grafana get secret $GRAFANA_SECRET -o jsonpath={.data.token} | base64 -d`
 
 cp -f grafana-data-source.yaml  $TMP_DIR/grafana-data-source-resolved.yaml
 
